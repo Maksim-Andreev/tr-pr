@@ -1,7 +1,7 @@
 /* Bump CACHE when you change index.html, the CSS or the icons.
    You do NOT need to bump it for reasons.json - that is fetched
    network-first and falls back to the cached copy when offline. */
-var CACHE = "three-reasons-v1";
+var CACHE = "three-reasons-v2";
 var SHELL = [
   "./",
   "./index.html",
