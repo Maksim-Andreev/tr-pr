@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Три причины</title>
+<!--PWA-->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Три причины">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#FBDF95">
+<!--/PWA-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Rubik:wght@300;400;500;600&display=swap">
+<style>
+/* One committed look: a yellow note, ink on sun. No dark variant - it should
+   feel like the same object every time she opens it. */
+:root{
+  --sun:#FBDF95;
+  --sun-deep:#EFC963;
+  --sun-pale:#FDF0CE;
+  --paper:#FFFBF1;
+  --ink:#2A2113;
+  --ink-soft:#7A6942;
+  --red:#C2402F;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%; background:var(--sun)}
+body{
+  margin:0; min-height:100svh;
+  background:var(--sun); color:var(--ink);
+  font-family:"Rubik",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+.page{
+  width:100%; max-width:33rem; margin:0 auto;
+  padding-inline:22px;
+  padding-block:max(34px, env(safe-area-inset-top)) max(26px, env(safe-area-inset-bottom));
+  display:flex; flex-direction:column; gap:30px;
+  min-height:100svh;
+}
+
+/* her question, in her handwriting */
+.masthead{display:flex; flex-direction:column; align-items:center; gap:20px; text-align:center}
+
+/* the thing he says first */
+.love{
+  display:inline-flex; align-items:center; gap:11px;
+  padding:15px 26px; border-radius:999px; cursor:pointer;
+  background:var(--red); border:0; color:var(--paper);
+  font-family:"Rubik",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:1.125rem; font-weight:500; letter-spacing:-.01em;
+  box-shadow:0 2px 0 rgba(42,33,19,.2);
+  transition:transform .15s, box-shadow .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.love[hidden]{display:none}
+.love:active{transform:translateY(2px); box-shadow:0 0 0 rgba(42,33,19,.2)}
+.love-heart{width:20px; height:20px; flex:0 0 auto; fill:currentColor; stroke:none}
+@media (prefers-reduced-motion:no-preference){
+  .love.is-playing .love-heart{animation:beat .9s ease-in-out infinite}
+}
+@keyframes beat{
+  0%,100%{transform:scale(1)} 16%{transform:scale(1.25)}
+  32%{transform:scale(1)} 48%{transform:scale(1.15)} 64%{transform:scale(1)}
+}
+.ask{
+  margin:0;
+  font-family:"Caveat","Bradley Hand","Segoe Script",cursive;
+  font-weight:600; font-size:clamp(1.75rem,7vw,2.25rem); line-height:1.15;
+  color:var(--ink); letter-spacing:0;
+}
+
+/* his answers */
+.answer{display:flex; flex-direction:column; gap:30px}
+.reason{
+  display:grid; grid-template-columns:1fr auto;
+  column-gap:12px; row-gap:2px; align-items:start;
+}
+.ord{
+  grid-column:1 / -1;
+  font-family:"Rubik",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-weight:600;
+  font-size:2rem; line-height:1; color:var(--sun-deep);
+  letter-spacing:-.02em;
+}
+.rtext{
+  grid-column:1; margin:0;
+  font-family:"Rubik",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-weight:400;
+  font-size:clamp(1.3125rem,5vw,1.5rem); line-height:1.3; letter-spacing:-.011em;
+  color:var(--ink); text-wrap:pretty;
+}
+.acts{grid-column:2; align-self:end; display:flex; align-items:center; gap:6px; margin-bottom:-4px}
+.prog{grid-column:1 / -1; height:2px; background:var(--sun-deep); margin-top:14px; border-radius:2px; display:none}
+.reason.is-playing .prog{display:block}
+.prog i{display:block; height:2px; background:var(--ink); width:0; border-radius:2px; transition:width .2s linear}
+.reason.is-playing .ord{color:var(--ink)}
+
+/* controls */
+.play{
+  width:38px; height:38px; flex:0 0 auto; border-radius:50%;
+  display:grid; place-items:center; cursor:pointer;
+  background:var(--ink); border:0; color:var(--sun);
+  transition:transform .15s, background .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.play svg{width:15px; height:15px}
+.play .i-play{fill:currentColor; stroke:none}
+.play .i-pause{fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; display:none}
+.play:active{transform:scale(.9)}
+.reason.is-playing .play, li.is-playing .play{background:var(--red)}
+.reason.is-playing .play .i-play, li.is-playing .play .i-play{display:none}
+.reason.is-playing .play .i-pause, li.is-playing .play .i-pause{display:block}
+.fav{
+  width:38px; height:38px; flex:0 0 auto;
+  display:grid; place-items:center; cursor:pointer;
+  background:none; border:0; color:var(--ink-soft);
+  transition:color .2s, transform .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.fav svg{width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.8; transition:fill .2s}
+.fav[aria-pressed="true"]{color:var(--red)}
+.fav[aria-pressed="true"] svg{fill:var(--red)}
+.fav:active{transform:scale(.88)}
+
+/* the two things she can do */
+.actions{display:flex; flex-wrap:wrap; justify-content:center; gap:10px}
+.btn{
+  display:inline-flex; align-items:center; gap:9px;
+  padding:14px 24px; border-radius:999px; cursor:pointer;
+  font-family:"Rubik",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-size:.9375rem; font-weight:500; letter-spacing:-.005em;
+  border:1.5px solid var(--ink); transition:transform .15s, background .2s, color .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn:active{transform:scale(.97)}
+.refresh{background:var(--ink); color:var(--sun)}
+.refresh svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:transform .45s cubic-bezier(.3,.8,.3,1)}
+.refresh:active svg{transform:rotate(-180deg)}
+.playall{background:transparent; color:var(--ink)}
+.playall.is-on{background:var(--red); border-color:var(--red); color:var(--paper)}
+.playall[hidden]{display:none}
+
+/* foot */
+.foot{
+  margin-top:auto; padding-top:22px; border-top:1.5px solid var(--sun-deep);
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+}
+.saved-btn{
+  background:none; border:0; padding:4px 0; cursor:pointer; color:var(--ink);
+  font-family:"Rubik",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-size:.9375rem; font-weight:500;
+  border-bottom:1.5px solid var(--sun-deep);
+}
+.saved-btn:hover{border-bottom-color:var(--ink)}
+.sign{
+  margin:0; font-family:"Caveat","Bradley Hand","Segoe Script",cursive;
+  font-weight:600; font-size:1.375rem; color:var(--ink-soft);
+}
+
+/* kept */
+.sheet{
+  position:fixed; inset:0; z-index:10;
+  background:rgba(42,33,19,.42);
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.sheet[hidden]{display:none}
+.sheet-inner{
+  width:100%; max-width:33rem; max-height:86svh;
+  background:var(--paper); border-radius:22px 22px 0 0;
+  padding:24px 22px max(24px, env(safe-area-inset-bottom));
+  display:flex; flex-direction:column; gap:12px;
+  animation:slideup .28s cubic-bezier(.2,.8,.3,1) both;
+}
+@media (prefers-reduced-motion:reduce){.sheet-inner{animation:none}}
+@keyframes slideup{from{transform:translateY(16px);opacity:0} to{transform:none;opacity:1}}
+.sheet-head{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.sheet-title{margin:0; font-family:"Rubik",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-size:1.0625rem; font-weight:500; color:var(--ink)}
+.close{
+  background:none; border:0; color:var(--ink-soft); cursor:pointer;
+  font-size:1.5rem; line-height:1; padding:2px 6px;
+}
+.close:hover{color:var(--ink)}
+.saved-list{
+  list-style:none; margin:0; padding:0 2px 2px 0;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  display:flex; flex-direction:column;
+}
+.saved-list li{padding-block:18px; display:flex; flex-direction:column; gap:10px}
+.saved-list li + li{border-top:1.5px solid var(--sun-pale)}
+.saved-list li.empty-wrap{border-top:0}
+.saved-list p{
+  margin:0; font-family:"Rubik",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-weight:400;
+  font-size:1.0625rem; line-height:1.34; color:var(--ink);
+}
+.saved-foot{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.saved-list .acts{display:flex; align-items:center; gap:6px; margin:-8px -6px -8px 0}
+.when{font-family:"Rubik",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-size:.8125rem; color:var(--ink-soft)}
+.empty{
+  margin:0; padding-block:22px 8px;
+  font-family:"Caveat","Bradley Hand","Segoe Script",cursive; font-weight:600;
+  font-size:1.375rem; line-height:1.3; color:var(--ink-soft);
+}
+
+@media (prefers-reduced-motion:no-preference){
+  .reason{animation:rise .42s cubic-bezier(.2,.8,.3,1) both}
+  .reason:nth-child(1){animation-delay:.02s}
+  .reason:nth-child(2){animation-delay:.09s}
+  .reason:nth-child(3){animation-delay:.16s}
+}
+@keyframes rise{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
+:focus-visible{outline:2.5px solid var(--ink); outline-offset:3px; border-radius:4px}
+</style>
+</head>
+<body>
+
+<main class="page">
+  <header class="masthead">
+    <button class="love" id="love" type="button" hidden>
+      <svg class="love-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.4s-7.4-4.7-7.4-9.7A4.2 4.2 0 0 1 12 7.9a4.2 4.2 0 0 1 7.4 2.8c0 5-7.4 9.7-7.4 9.7z"/></svg>
+      <span id="loveText">Я тебя люблю</span>
+    </button>
+    <h1 class="ask" id="ask">&laquo;Почему ты меня любишь?&raquo;</h1>
+  </header>
+
+  <section class="answer" id="answer" aria-live="polite"></section>
+
+  <div class="actions">
+    <button class="btn refresh" id="refresh" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 3.5V8h-4.5"/></svg>
+      Ещё три
+    </button>
+    <button class="btn playall" id="playAll" type="button" hidden>Слушать всё</button>
+  </div>
+
+  <footer class="foot">
+    <button class="saved-btn" id="savedBtn" type="button">Сохранённое &middot; <span id="savedCount">0</span></button>
+    <p class="sign" id="sign"></p>
+  </footer>
+</main>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <h2 class="sheet-title" id="sheetTitle">Сохранённое</h2>
+      <button class="close" id="closeSheet" type="button" aria-label="Закрыть">&times;</button>
+    </div>
+    <ul class="saved-list" id="savedList"></ul>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var DEFAULT_DATA = {"_readme":"Единственный файл, который нужно редактировать. Новая причина с записью: { \"id\": \"158\", \"t\": \"...\" } и файл audio/158.wav. Причина без записи — просто строка в кавычках. id больше никогда не меняется.","_love":"love: фраза сверху. text — что написано на кнопке, count — сколько записей. Файлы audio/love-1.wav ... love-6.wav, при каждом нажатии играет случайная.","audio":true,"audioExt":"wav","her":"","signature":"Максим","startDate":"2026-09-17","love":{"text":"Я тебя люблю","count":6},"special":[],"reasons":[{"id":"001","t":"Потому что ты смешно боишься щекотки"},{"id":"002","t":"Потому что долго хранила упавший листочек с дерева, который я поймал"},{"id":"003","t":"Потому что отдаешь мне еду, только чтобы я наелся"},{"id":"158","t":"Потому что ты любишь ходить в горы"},{"id":"004","t":"Потому что ты меня любишь"},{"id":"005","t":"Потому что ты просишь обнимашки, когда тебе грустно"},{"id":"006","t":"Потому что ты много читаешь"},{"id":"007","t":"Потому что ты умеешь искренне удивляться простым вещам"},{"id":"008","t":"Потому что ты придумала самую короткую версию моего имени: Ма"},{"id":"009","t":"Потому что ты не любишь одноразовую посуду"},{"id":"010","t":"Потому что любишь свой старый фотоаппарат, который печатает настоящие фотографии"},{"id":"011","t":"Потому что ты фанат Гарри Поттера"},{"id":"012","t":"Потому что ты эмоциональная"},{"id":"013","t":"Потому что половина нашего холодильника всегда занята кимчи"},{"id":"014","t":"Потому что ты не умеешь прятать эмоции"},{"id":"015","t":"Потому что пересказываешь песни своими словами, когда не помнишь"},{"id":"016","t":"Потому что ты не боишься жить в чужой стране"},{"id":"017","t":"Потому что ты смешная"},{"id":"018","t":"Потому что ты добрая"},{"id":"019","t":"Потому что ты придумала петь для Кюрины песни перед сном"},{"id":"020","t":"Потому что приезжала ко мне в Сувон издалека"},{"id":"021","t":"Потому что ты всегда меня встречаешь и провожаешь с работы"},{"id":"022","t":"Потому что ты не умеешь злиться долго"},{"id":"023","t":"Потому что ты любишь подержанные вещи"},{"id":"024","t":"Потому что ты любишь детей"},{"id":"025","t":"Потому что ты спасатель улиток"},{"id":"026","t":"Потому что ты заботливая"},{"id":"027","t":"Потому что ты съедаешь пачку чипсов и мороженое и потом жалуешься, что объелась"},{"id":"028","t":"Потому что ты готовишь очень вкусный кимчи"},{"id":"029","t":"Потому что ты засыпаешь под Гарри Поттера и очень быстро"},{"id":"030","t":"Потому что покупаешь что-то и потом забываешь, что заказала"},{"id":"031","t":"Потому что забавно драматизируешь свои страдания"},{"id":"032","t":"Потому что ты долго не сдавалась кормить Кюрину грудью"},{"id":"033","t":"Потому что ты всегда стараешься проводить с Кюриной много времени"},{"id":"034","t":"Потому что ты не боишься запаха подмышек"},{"id":"035","t":"Потому что ты любишь большие кружки"},{"id":"036","t":"Потому что ты говоришь, что получила вещь бесплатно, хотя заплатила за доставку 30 долларов"},{"id":"037","t":"Потому что ты любишь маленькие скидки и купончики"},{"id":"038","t":"Потому что среди всех цветов тебе нравятся когда их много и они маленькие"},{"id":"039","t":"Потому что ты встаёшь на весы после одного дня диеты"},{"id":"040","t":"Потому что ты думала, что я похож на Рона Уизли"},{"id":"041","t":"Потому что переживаешь из-за несправедливости"},{"id":"042","t":"Потому что почти каждый день смотришь фото в моем телефоне"},{"id":"043","t":"Потому что ты умеешь искренне переживать"},{"id":"044","t":"Потому что тепло заботишься и переживаешь, если я болею"},{"id":"045","t":"Потому что радуешься, как ребенок, когда получаешь скидку"},{"id":"046","t":"Потому что ты умеешь быстро что-то приготовить"},{"id":"047","t":"Потому что ты любишь повторять блюда из ресторанов дома"},{"id":"048","t":"Потому что ты хорошо помнишь имена всех людей"},{"id":"049","t":"Потому что ты думаешь о других людях"},{"id":"050","t":"Потому что ты не даёшь мне спать, пока я не почищу зубы"},{"id":"051","t":"Потому что ты спасла меня от таракана"},{"id":"052","t":"Потому что ты придумала называть меня Матыячи"},{"id":"053","t":"Потому что ты заботишься о природе"},{"id":"054","t":"Потому что ты всегда спрашиваешь, люблю ли я тебя и просишь назвать причины"},{"id":"055","t":"Потому что мы разные"},{"id":"056","t":"Потому что ты ходишь с рулеткой по дому"},{"id":"057","t":"Потому что ты любишь макать что-то в чай, как бабушка"},{"id":"058","t":"Потому что ты можешь неожиданно съесть много чипсов"},{"id":"059","t":"Потому что ты меня всегда поддерживаешь"},{"id":"060","t":"Потому что ты не любишь много вещей"},{"id":"061","t":"Потому что ты разговариваешь со мной на русском языке"},{"id":"062","t":"Потому что ты существуешь"},{"id":"063","t":"Потому что с тобой весело путешествовать на машине"},{"id":"064","t":"Потому что готовишь мне кашу, когда я болею"},{"id":"065","t":"Потому что всегда думаешь, что потеряла телефон и пугаешься, а потом находишь"},{"id":"066","t":"Потому что теряешься, выбирая одно из двух и просишь выбрать меня"},{"id":"067","t":"Потому что теряешься в карте на телефоне и просишь найти дорогу"},{"id":"068","t":"Потому что самые смешные шутки для тебя — это когда кому-то больно"},{"id":"069","t":"Потому что всегда ищешь Хеёну в отражениях"},{"id":"070","t":"Потому что часто звонишь мне случайно"},{"id":"071","t":"Потому что почти месяц пыталась испечь хлеб в Сингапуре"},{"id":"072","t":"Потому что ты создала и родила нашу дочку"},{"id":"073","t":"Потому что ты даёшь мне поспать рано утром, когда я уставший"},{"id":"074","t":"Потому что ты старалась не принимать лишние лекарства во время беременности, даже когда было слишком тяжело"},{"id":"075","t":"Потому что ты всегда пытаешься познакомить Евгения со своими знакомыми"},{"id":"076","t":"Потому что ты заботишься о нашем здоровье"},{"id":"077","t":"Потому что ты ответственная"},{"id":"078","t":"Потому что ты умеешь сопереживать людям"},{"id":"079","t":"Потому что благодаря тебе у нас дома бывают гости"},{"id":"080","t":"Потому что ты красивая"},{"id":"081","t":"Потому что ты милая"},{"id":"082","t":"Потому что у тебя бесконечно много выражений лица"},{"id":"083","t":"Потому что у тебя смешные эмоции"},{"id":"084","t":"Потому что ты показываешь руками все, о чем говоришь"},{"id":"085","t":"Потому что ты любишь грустить"},{"id":"086","t":"Потому что ты ведёшь себя естественно перед камерой"},{"id":"087","t":"Потому что ты вкусно готовишь"},{"id":"088","t":"Потому что ты придумываешь новые рецепты"},{"id":"089","t":"Потому что тебя можно сделать счастливой просто покормив"},{"id":"090","t":"Потому что тебя невозможно сделать счастливой, когда ты голодная"},{"id":"091","t":"Потому что ты любишь только первый глоток напитков"},{"id":"092","t":"Потому что ты всегда просишь много крема в Starbucks"},{"id":"093","t":"Потому что ты сначала ненавидела джекфрукт, а потом неожиданно полюбила"},{"id":"094","t":"Потому что сладости, которые ты любишь, не должны быть слишком сладкими"},{"id":"095","t":"Потому что ты хорошо организуешь вещи дома"},{"id":"096","t":"Потому что ты знаешь, где вещи находятся дома"},{"id":"097","t":"Потому что после тебя всегда остаётся маленький беспорядок"},{"id":"098","t":"Потому что у тебя есть любимая тонкая подушка"},{"id":"099","t":"Потому что у тебя телефон всегда заряжен на 5%"},{"id":"100","t":"Потому что даже для маленькой прогулки ты собираешь огромную сумку"},{"id":"101","t":"Потому что ты не боишься работать на земле"},{"id":"102","t":"Потому что ты любишь кошек"},{"id":"103","t":"Потому что ты готова неудобно мыться, чтобы не выбрасывать зря воду"},{"id":"104","t":"Потому что ты долго используешь вещи"},{"id":"105","t":"Потому что ты постоянно выходишь и заходишь в чаты, где продают подержанные вещи"},{"id":"106","t":"Потому что ты всегда покупаешь пакетики в Икее"},{"id":"107","t":"Потому что мы носили пижамки в Корее"},{"id":"108","t":"Потому что ты изобретательная"},{"id":"109","t":"Потому что ты красиво поёшь"},{"id":"110","t":"Потому что ты организовала свой клуб для чтения"},{"id":"111","t":"Потому что ты любишь страшные фильмы, но пугаешься громких звуков"},{"id":"112","t":"Потому что ты любишь играть в карты"},{"id":"113","t":"Потому что ты можешь застрять в какой-нибудь игре и плохо спать из-за неё несколько дней"},{"id":"114","t":"Потому что у тебя всегда получаются красивые фотографии"},{"id":"115","t":"Потому что ты думаешь, что ты мастер фотошопа"},{"id":"116","t":"Потому что тебя легко вытащить из дома"},{"id":"117","t":"Потому что ты хорошо водишь машину"},{"id":"118","t":"Потому что ты любишь море"},{"id":"119","t":"Потому что ты любишь дождливую погоду"},{"id":"120","t":"Потому что тебе можно рассказывать одни и те же истории каждые несколько лет"},{"id":"121","t":"Потому что ты не ложишься спать, даже зная, что надо рано вставать"},{"id":"122","t":"Потому что ты спрашиваешь, надо ли мыть волосы после трех дней"},{"id":"123","t":"Потому что все, что тебе нравится, оказывается жёлтым"},{"id":"124","t":"Потому что ты каждый день спрашиваешь, похудела ли ты и где похудела"},{"id":"125","t":"Потому что ты ешь острую еду, когда получаешь стресс"},{"id":"126","t":"Потому что построила дом для кошек на даче у мамы"},{"id":"127","t":"Потому что стараешься экономить"},{"id":"128","t":"Потому что ты любишь переработку"},{"id":"129","t":"Потому что только ты могла попасть на камеру, как человек, который плохо перерабатывает мусор"},{"id":"130","t":"Потому что я чувствую себя увереннее с тобой"},{"id":"131","t":"Потому что ты терпишь, когда у меня плохое настроение"},{"id":"132","t":"Потому что я всегда рад возвращаться домой"},{"id":"133","t":"Потому что всегда спрашиваешь, что я поел"},{"id":"134","t":"За твой талант собирать вещи в дорогу"},{"id":"135","t":"Потому что всегда засыпаешь в очках"},{"id":"136","t":"Потому что всегда выбрасываешь очки, пока спишь и потом не можешь найти, потому что не видно"},{"id":"137","t":"Потому что всегда заказываешь менее вкусную еду и потом забираешь мою"},{"id":"138","t":"За твою любовь к сметане и черному хлебу"},{"id":"139","t":"Потому что сама находишь грустные видео и потом плачешь"},{"id":"140","t":"Потому что ты рассказываешь мне свои сны"},{"id":"141","t":"За то, как ты смешно реагируешь, когда находишь седые волосы"},{"id":"142","t":"За то, что ты терпишь меня, несмотря на сложный характер"},{"id":"143","t":"За твою любовь к десертам"},{"id":"144","t":"Потому что ты злишься и плохо отвечаешь на вопросы про корейский язык"},{"id":"145","t":"Потому что с тобой весело готовить завтраки"},{"id":"146","t":"Потому что ты стараешься, чтобы людям было с тобой комфортно"},{"id":"147","t":"Потому что ты придумываешь свои слова на русском языке и уверенно их используешь"},{"id":"148","t":"Потому что прощаешься со мной, когда я иду в туалет"},{"id":"149","t":"Потому что информируешь меня о больших потерях"},{"id":"150","t":"Потому что с тобой можно гулять по барам"},{"id":"151","t":"Потому что ты можешь похвалить за то, что я хорошо покушал"},{"id":"152","t":"Потому что с пониманием относишься, когда я занят по вечерам"},{"id":"153","t":"Потому что ты приносишь мне вкусняшки из офиса"},{"id":"154","t":"Потому что носишь мою одежду, когда меня нет рядом"},{"id":"155","t":"Потому что заставляешь использовать зонтик под солнцем"},{"id":"156","t":"Потому что хорошо ухаживаешь за кожей"},{"id":"157","t":"Потому что только ты можешь перемешать все вкусы в одном блюде и наслаждаться"}]};
+  var ORD = ["1","2","3"];
+  var KEY_FAV  = "tr.favs.v2";
+  var KEY_DECK = "tr.deck.v1";
+  var KEY_LOVE = "tr.love.v1";
+
+  var data = DEFAULT_DATA;
+  var current = [];
+  var missing = {};
+
+  /* ---------- storage (never let a private window break the app) ---------- */
+  function load(k, fb){
+    try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }catch(e){ return fb; }
+  }
+  function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+  var favs = load(KEY_FAV, null);
+  if (!favs){                                    // carry over anything kept by the old version
+    favs = (load("tr.favs.v1", []) || []).map(function(f){
+      return { id:null, t:f.text, at:f.date || null };
+    });
+  }
+
+  function norm(e){
+    if (typeof e === "string") return { id:null, t:e };
+    return { id: e.id || null, t: e.t || e.text || "" };
+  }
+  function reasons(){ return (data.reasons || []).map(norm); }
+
+  /* ---------- the deck ----------
+     Three at random, but dealt from a shuffled deck rather than picked
+     independently - so nothing comes back until everything has been seen. */
+  function shuffle(a){
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function sig(){
+    var r = reasons();
+    return r.length + ":" + (r[0] ? r[0].id : "") + ":" + (r[r.length-1] ? r[r.length-1].id : "");
+  }
+  function newDeck(){
+    return { sig: sig(), order: shuffle(reasons().map(function(e, i){ return e.id || String(i); })), pos: 0 };
+  }
+  function deal(){
+    var d = load(KEY_DECK, null);
+    if (!d || d.sig !== sig() || !d.order || !d.order.length) d = newDeck();
+
+    var all = reasons(), n = all.length;
+    var byKey = {};
+    all.forEach(function(e, i){ byKey[e.id || String(i)] = e; });
+
+    var out = [], seen = {}, guard = 0;
+    while (out.length < Math.min(3, n) && guard++ < n * 3){
+      if (d.pos >= d.order.length){                 // deck spent - cut a fresh one
+        var next = newDeck();
+        // don't let the new deck open with something still on screen
+        if (n > 3) next.order = next.order.filter(function(k){ return !seen[k]; })
+                                         .concat(next.order.filter(function(k){ return seen[k]; }));
+        d = { sig: next.sig, order: next.order, pos: 0 };
+      }
+      var key = d.order[d.pos++];
+      if (byKey[key] && !seen[key]){ seen[key] = 1; out.push(byKey[key]); }
+    }
+    save(KEY_DECK, d);
+    return out;
+  }
+
+  /* ---------- his voice ----------
+     One <audio> element for the whole app: iOS unlocks it on her first tap
+     and every clip after that plays without another one. */
+  var player = new Audio();
+  player.preload = "none";
+  var playingId = null;
+  var queue = [], qi = -1, gapTimer = null;
+
+  function srcFor(id){ return "audio/" + id + "." + (data.audioExt || "wav"); }
+  function hasAudio(e){ return !!(data.audio && e.id && !missing[e.id]); }
+
+  function stopAudio(){
+    clearTimeout(gapTimer);
+    try{ player.pause(); }catch(e){}
+    playingId = null; queue = []; qi = -1;
+    paint();
+  }
+  function playId(id){
+    clearTimeout(gapTimer);
+    playingId = id;
+    player.src = srcFor(id);
+    var p = player.play();
+    if (p && p.catch) p.catch(function(){ onFail(); });
+    paint();
+  }
+  function advance(){
+    qi++;
+    if (qi < queue.length) playId(queue[qi]); else stopAudio();
+  }
+  function onFail(){
+    if (playingId && playingId.indexOf("love-") === 0){
+      missing[playingId] = 1;
+      $("love").hidden = true;                 // no recording for it - don't offer it
+      stopAudio(); return;
+    }
+    if (playingId){
+      missing[playingId] = 1;
+      var b = document.querySelector('[data-id="' + playingId + '"] .play');
+      if (b) b.remove();
+      $("playAll").hidden = !current.some(hasAudio);
+    }
+    if (queue.length) advance(); else stopAudio();
+  }
+  player.addEventListener("error", onFail);
+  player.addEventListener("ended", function(){
+    if (!queue.length){ stopAudio(); return; }
+    gapTimer = setTimeout(advance, 500);
+  });
+  player.addEventListener("timeupdate", function(){
+    var el = playingId && document.querySelector('.reason[data-id="' + playingId + '"] .prog i');
+    if (el && player.duration) el.style.width = (player.currentTime / player.duration * 100) + "%";
+  });
+
+  /* ---------- render ---------- */
+  var $ = function(id){ return document.getElementById(id); };
+  var fmtDay = new Intl.DateTimeFormat("ru-RU", {day:"numeric", month:"long"});
+
+  function esc(s){
+    return String(s).replace(/[&<>"]/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+    });
+  }
+  function favIndex(e){
+    return favs.findIndex(function(f){ return (e.id && f.id === e.id) || f.t === e.t; });
+  }
+
+  var ICON_HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.5-7-9.2A4 4 0 0 1 12 8a4 4 0 0 1 7 2.8C19 15.5 12 20 12 20z"/></svg>';
+  var ICON_PLAY  = '<svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>'
+                 + '<svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.5v13M15.5 5.5v13"/></svg>';
+
+  function playBtn(e){
+    return hasAudio(e) ? '<button class="play" type="button" aria-label="Слушать">' + ICON_PLAY + '</button>' : "";
+  }
+
+  function render(){
+    $("answer").innerHTML = current.map(function(e, i){
+      return '<article class="reason"' + (e.id ? ' data-id="' + esc(e.id) + '"' : "") + '>'
+        + '<span class="ord">' + ORD[i] + '</span>'
+        + '<p class="rtext">' + esc(e.t) + '</p>'
+        + '<div class="acts">' + playBtn(e)
+        + '<button class="fav" type="button" aria-pressed="' + (favIndex(e) >= 0 ? "true" : "false") + '" '
+        + 'aria-label="Сохранить">' + ICON_HEART + '</button></div>'
+        + '<div class="prog"><i></i></div>'
+        + '</article>';
+    }).join("");
+    $("savedCount").textContent = favs.length;
+    $("playAll").hidden = !current.some(hasAudio);
+    paint();
+  }
+
+  function paint(){
+    var nodes = document.querySelectorAll("[data-id]");
+    for (var i = 0; i < nodes.length; i++){
+      var on = nodes[i].getAttribute("data-id") === playingId;
+      nodes[i].classList.toggle("is-playing", on);
+      if (!on){
+        var bar = nodes[i].querySelector(".prog i");
+        if (bar) bar.style.width = "0%";
+      }
+      var b = nodes[i].querySelector(".play");
+      if (b) b.setAttribute("aria-label", on ? "Пауза" : "Слушать");
+    }
+    var all = $("playAll");
+    all.textContent = queue.length ? "Остановить" : "Слушать всё";
+    all.classList.toggle("is-on", !!queue.length);
+  }
+
+  function refresh(){
+    stopAudio();
+    current = deal();
+    render();
+  }
+
+  /* ---------- saved ---------- */
+  function renderSaved(){
+    var list = $("savedList");
+    if (!favs.length){
+      list.innerHTML = '<li class="empty-wrap"><p class="empty">Пока пусто. Нажми на сердечко рядом с любой причиной — она останется здесь.</p></li>';
+      return;
+    }
+    list.innerHTML = favs.slice().reverse().map(function(f){
+      var e = { id: f.id, t: f.t };
+      return '<li' + (f.id ? ' data-id="' + esc(f.id) + '"' : "") + '>'
+        + '<p>' + esc(f.t) + '</p>'
+        + '<div class="saved-foot">'
+        + '<span class="when">' + (f.at ? "сохранено " + fmtDay.format(new Date(f.at)) : "") + '</span>'
+        + '<div class="acts">' + playBtn(e)
+        + '<button class="fav" type="button" aria-pressed="true" aria-label="Убрать">' + ICON_HEART + '</button>'
+        + '</div></div></li>';
+    }).join("");
+    paint();
+  }
+
+  function toggleFav(e, pressed){
+    var i = favIndex(e);
+    if (i >= 0) favs.splice(i, 1);
+    else favs.push({ id: e.id, t: e.t, at: Date.now() });
+    save(KEY_FAV, favs);
+    $("savedCount").textContent = favs.length;
+    return i < 0;
+  }
+
+  /* ---------- events ---------- */
+  function wireList(root, lookup){
+    root.addEventListener("click", function(ev){
+      var host = ev.target.closest("[data-id], li, article");
+      var play = ev.target.closest(".play");
+      if (play && host){
+        var id = host.getAttribute("data-id");
+        if (playingId === id && !player.paused) stopAudio();
+        else { queue = []; qi = -1; playId(id); }
+        return;
+      }
+      var fav = ev.target.closest(".fav");
+      if (!fav || !host) return;
+      var e = lookup(host);
+      if (!e) return;
+      var nowOn = toggleFav(e);
+      fav.setAttribute("aria-pressed", nowOn ? "true" : "false");
+      if (root === $("savedList") && !nowOn) renderSaved();
+      else if (root === $("answer")) { /* stays on screen */ }
+    });
+  }
+  wireList($("answer"), function(host){
+    var i = Array.prototype.indexOf.call($("answer").children, host);
+    return current[i] || null;
+  });
+  wireList($("savedList"), function(host){
+    var id = host.getAttribute("data-id");
+    var txt = host.querySelector("p") ? host.querySelector("p").textContent : "";
+    return { id: id, t: txt };
+  });
+
+  /* "Я тебя люблю" - a different take each time she presses it, dealt from a
+     shuffled deck so the same one never lands twice in a row. */
+  function loveTake(){
+    var c = (data.love && data.love.count) || 0;
+    if (!c) return 0;
+    var d = load(KEY_LOVE, null);
+    if (!d || d.c !== c || !d.order || d.pos >= d.order.length){
+      var last = d && d.order && d.pos > 0 ? d.order[d.pos-1] : null;
+      var nums = [];
+      for (var i = 1; i <= c; i++) nums.push(i);
+      nums = shuffle(nums);
+      if (c > 1 && nums[0] === last){ var t = nums[0]; nums[0] = nums[1]; nums[1] = t; }
+      d = { c:c, order:nums, pos:0 };
+    }
+    var pick = d.order[d.pos++];
+    save(KEY_LOVE, d);
+    return pick;
+  }
+  $("love").addEventListener("click", function(){
+    if (playingId && playingId.indexOf("love-") === 0 && !player.paused){ stopAudio(); return; }
+    var n = loveTake();
+    if (!n) return;
+    $("love").setAttribute("data-id", "love-" + n);
+    queue = []; qi = -1;
+    playId("love-" + n);
+  });
+
+  $("refresh").addEventListener("click", refresh);
+
+  $("playAll").addEventListener("click", function(){
+    if (queue.length){ stopAudio(); return; }
+    var ids = current.filter(hasAudio).map(function(e){ return e.id; });
+    if (!ids.length) return;
+    queue = ids; qi = 0; playId(ids[0]);
+  });
+
+  $("savedBtn").addEventListener("click", function(){
+    renderSaved(); $("sheet").hidden = false; $("closeSheet").focus();
+  });
+  function closeSheet(){ $("sheet").hidden = true; $("savedBtn").focus(); }
+  $("closeSheet").addEventListener("click", closeSheet);
+  $("sheet").addEventListener("click", function(e){ if (e.target === $("sheet")) closeSheet(); });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && !$("sheet").hidden) return closeSheet();
+    if (!$("sheet").hidden) return;
+    if (e.key === " " || e.key === "Enter"){
+      if (document.activeElement === document.body){ e.preventDefault(); refresh(); }
+    }
+  });
+
+  // swipe for the next three
+  var sx = 0, sy = 0;
+  document.addEventListener("touchstart", function(e){
+    sx = e.changedTouches[0].clientX; sy = e.changedTouches[0].clientY;
+  }, {passive:true});
+  document.addEventListener("touchend", function(e){
+    if (!$("sheet").hidden) return;
+    var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) refresh();
+  }, {passive:true});
+
+  /* ---------- boot ---------- */
+  function applyData(d, fresh){
+    data = d;
+    $("ask").innerHTML = d.her
+      ? "&laquo;" + esc(d.her) + ", почему ты меня любишь?&raquo;"
+      : "&laquo;Почему ты меня любишь?&raquo;";
+    $("sign").textContent = d.signature ? "— " + d.signature : "";
+    var love = d.love && d.love.count && d.audio;
+    $("love").hidden = !love;
+    if (love && d.love.text) $("loveText").textContent = d.love.text;
+    if (fresh || !current.length) current = deal();
+    render();
+  }
+
+  applyData(DEFAULT_DATA, true);
+
+  fetch("reasons.json", { cache: "no-cache" })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+    .then(function(d){ applyData(d, true); })
+    .catch(function(){});
+})();
+</script>
+<!--PWA-->
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  });
+}
+</script>
+<!--/PWA-->
+</body>
+</html>
